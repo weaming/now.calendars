@@ -139,7 +139,7 @@ class CalendarTiger(CalendarBase):
             url = f"https://finance.yahoo.com/quote/{symbol}/"
             yield Event(
                 uid=symbol,
-                name=f"{symbol} | {name}",
+                name=f"{market} | {symbol} | {name}",
                 begin=begin,
                 # duration=datetime.timedelta(hours=12),
                 description=desc,
