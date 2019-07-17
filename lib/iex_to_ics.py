@@ -7,6 +7,9 @@ from .tiger_api import get_ipo_calendar
 
 
 def get_ipo_info_html(symbol):
+    # disable this func
+    return ""
+
     with db:
         key = "ipo_info_html"
         if db[key]:
