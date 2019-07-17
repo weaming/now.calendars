@@ -179,54 +179,59 @@ def get_rss():
 @route_for_rss("/calendar/ipo-upcoming-tiger")
 @wrap_exception
 def ipo_upcoming_tiger():
+    rss = get_rss()
     cld = CalendarTiger()
-    output = cld.get_output_path(get_rss())
+    cld.name += rss
+    output = cld.get_output_path(rss)
     text = read_file(output)
 
     if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
-        cld.gen_ics(get_rss())
+        cld.gen_ics(rss)
     return read_file(output) or "FILE NOT FOUND"
 
 
 @route_for_rss("/calendar/ipo-upcoming-tiger-us")
 @wrap_exception
 def ipo_upcoming_tiger_us():
+    rss = get_rss()
     cld = CalendarTiger(filter_fn=lambda x: x["market"] == "US")
-    cld.name = "ipo-upcoming-tiger-us"
+    cld.name = "ipo-upcoming-tiger-us" + "-" + rss
     cld.cal_name = "IPO (tiger) (US)"
 
-    output = cld.get_output_path(get_rss())
+    output = cld.get_output_path(rss)
     text = read_file(output)
     if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
-        cld.gen_ics(get_rss())
+        cld.gen_ics(rss)
     return read_file(output) or "FILE NOT FOUND"
 
 
 @route_for_rss("/calendar/ipo-upcoming-tiger-hk")
 @wrap_exception
 def ipo_upcoming_tiger_hk():
+    rss = get_rss()
     cld = CalendarTiger(filter_fn=lambda x: x["market"] == "HK")
-    cld.name = "ipo-upcoming-tiger-hk"
+    cld.name = "ipo-upcoming-tiger-hk" + "-" + rss
     cld.cal_name = "IPO (tiger) (HK)"
 
-    output = cld.get_output_path(get_rss())
+    output = cld.get_output_path(rss)
     text = read_file(output)
     if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
-        cld.gen_ics(get_rss())
+        cld.gen_ics(rss)
     return read_file(output) or "FILE NOT FOUND"
 
 
 @route_for_rss("/calendar/ipo-upcoming-tiger-mainland")
 @wrap_exception
 def ipo_upcoming_tiger_mainland():
+    rss = get_rss()
     cld = CalendarTiger(filter_fn=lambda x: x["market"] in ["SZ", "SH"])
-    cld.name = "ipo-upcoming-tiger-mainland"
+    cld.name = "ipo-upcoming-tiger-mainland" + "-" + rss
     cld.cal_name = "IPO (tiger) (SH/SZ)"
 
-    output = cld.get_output_path(get_rss())
+    output = cld.get_output_path(rss)
     text = read_file(output)
     if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
-        cld.gen_ics(get_rss())
+        cld.gen_ics(rss)
     return read_file(output) or "FILE NOT FOUND"
 
 
