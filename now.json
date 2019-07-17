@@ -4,6 +4,7 @@
   "builds": [{ "src": "index.py", "use": "@now/python" }],
   "routes": [{ "src": "(.*)", "dest": "index.py" }],
   "env": {
-      "IEX_APIS_TOKEN": "@iex_apis_token"
+      "IEX_APIS_TOKEN": "@iex_apis_token",
+      "TIGER_API_AUTHORIZATION": "@tiger_api_authorization"
   }
 }

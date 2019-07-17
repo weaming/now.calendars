@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-flask = "==1.1.1"
+flask = "*"
 requests = "*"
 beautifulsoup4 = "*"
 ics = "*"

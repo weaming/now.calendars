@@ -2,6 +2,7 @@ import os
 from flask import Flask, __version__, jsonify, make_response, url_for, redirect
 from lib.iex_to_ics import get_ics_output, gen_ics
 from lib.common import read_file, expired_for_seconds
+from lib.tiger_api import get_ipo_calendar
 
 app = Flask(__name__)
 DEBUG = bool(os.getenv("DEBUG"))
@@ -68,6 +69,13 @@ def ipo_upcomming():
     if expired_for_seconds("iex-ipo-upcomming", 60 * 60 * 24) or text is None:
         gen_ics()
     return read_file(output) or "FILE NOT FOUND"
+
+
+@app.route("/api/itiger.com/calendar/api")
+@wrap_exception
+@dict_as_json
+def tiger_calendar():
+    return get_ipo_calendar().json()
 
 
 @app.route("/test")
