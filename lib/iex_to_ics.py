@@ -1,15 +1,18 @@
 import os
 from feedgen.feed import FeedGenerator
+from jsonkv import JsonKV
 
-from .common import http_get_url, prepare_dir, url2soup, db
+from .common import http_get_url, prepare_dir, url2soup
 from .ics_patch import *
 from .tiger_api import get_ipo_calendar
 
 
-def get_ipo_info_html(symbol):
-    # disable this func
-    return ""
+def get_ipo_info_html(symbol, enable=False):
+    if not enable:
+        return "detail disabled"
 
+    path = os.path.join("/tmp/", "db2.json")
+    db = JsonKV(path)
     with db:
         key = "ipo_info_html"
         if db[key]:
@@ -20,7 +23,7 @@ def get_ipo_info_html(symbol):
 
         soup1 = url2soup(f"https://www.nasdaq.com/symbol/{symbol}")
         if "this is an unknown symbol" in str(soup1).lower():
-            return ""
+            return "unknown symbol"
 
         a_tags = soup1.select(".notTradingIPO a")
         if a_tags:
@@ -47,7 +50,9 @@ def get_ipo_info_html(symbol):
             # with open("x.html", "w") as f:
             #     f.write(html)
             # return html
-        return ""
+        else:
+            return str((soup1.select(".overview-results") or [""])[0])
+    return ""
 
 
 class CalendarBase:
@@ -106,7 +111,7 @@ class CalendarBase:
             fg = FeedGenerator()
             fg.id(self.name)
             fg.title(f"Events of {self.cal_name}")
-            for e in c.events:  # type: Event
+            for i, e in enumerate(c.events):  # type: Event
                 fe = fg.add_entry()
                 fe.id(e.uid)
                 fe.title(e.name)
@@ -114,8 +119,9 @@ class CalendarBase:
                 fe.updated(e.begin.datetime)
 
                 market = e.name.split("|")[0].strip()
-                if market == "US":
-                    info_html = get_ipo_info_html(e.uid)
+                # only latest symbols
+                if market == "US" and len(c.events) - i <= 5:
+                    info_html = get_ipo_info_html(e.uid, enable=True)
                     link = f'<p><a href="https://www.nasdaq.com/symbol/{e.uid}">Goto NASDAQ detail page</a></p>'
                     fe.description(f"<p>{e.description}</p> {link} {info_html}")
                 else:

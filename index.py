@@ -1,7 +1,7 @@
 import os
 import traceback
 from flask import Flask, __version__, jsonify, make_response, url_for, redirect, request
-from lib.iex_to_ics import CalendarIEX, CalendarTiger
+from lib.iex_to_ics import CalendarIEX, CalendarTiger, get_ipo_info_html
 from lib.common import read_file, expired_for_seconds
 from lib.tiger_api import get_ipo_calendar
 
@@ -78,6 +78,13 @@ def status():
 @dict_as_json
 def tiger_calendar():
     return get_ipo_calendar().json()
+
+
+@app.route("/api/nasdaq.com/symbol/<symbol>", defaults={"symbol": "QQQ"})
+@wrap_exception
+@text_as_mime("text/html")
+def nasdaq_symbol_detail(symbol):
+    return get_ipo_info_html(symbol, enable=True)
 
 
 @app.route("/calendar/ipo-iex.ics")
