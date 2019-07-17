@@ -40,9 +40,10 @@ def get_ipo_info_html(symbol):
             # cache
             db[key][symbol] = html
 
-            with open("x.html", "w") as f:
-                f.write(html)
-            return html
+            # debug
+            # with open("x.html", "w") as f:
+            #     f.write(html)
+            # return html
         return ""
 
 
