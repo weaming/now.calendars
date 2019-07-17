@@ -90,13 +90,13 @@ class CalendarBase:
 
 
 class CalendarIEX(CalendarBase):
-    name = "ipo-upcoming-iex"
-    cal_name = "Upcoming IPOs"
+    name = "ipo-iex"
+    cal_name = "Upcoming IPOs (IEX)"
 
     def get_data(self):
         token = os.getenv("IEX_APIS_TOKEN")
         api = (
-            f"https://cloud.iexapis.com/stable/stock/market/upcoming-ipos?token={token}"
+            f"https://cloud.iexapis.com/stable/stock/market/ipos?token={token}"
         )
         err, data = http_get_url(api, is_json=True)
         if err:
@@ -125,7 +125,7 @@ class CalendarIEX(CalendarBase):
 
 
 class CalendarTiger(CalendarBase):
-    name = "ipo-upcoming-tiger"
+    name = "ipo-tiger"
     cal_name = "IPO (tiger)"
 
     def get_data(self):

@@ -78,10 +78,10 @@ def tiger_calendar():
     return get_ipo_calendar().json()
 
 
-@app.route("/calendar/ipo-upcoming-iex.ics")
+@app.route("/calendar/ipo-iex.ics")
 @wrap_exception
 @text_as_mime("text/plain" if DEBUG else "text/calendar")
-def ipo_upcoming_iex():
+def ipo_iex():
     cld = CalendarIEX()
     output = cld.get_output_path()
     text = read_file(output)
@@ -93,10 +93,10 @@ def ipo_upcoming_iex():
 # Tiger IPO calendar
 
 
-@app.route("/calendar/ipo-upcoming-tiger.ics")
+@app.route("/calendar/ipo-tiger.ics")
 @wrap_exception
 @text_as_mime("text/plain" if DEBUG else "text/calendar")
-def ipo_upcoming_tiger():
+def ipo_tiger():
     cld = CalendarTiger()
     output = cld.get_output_path()
     text = read_file(output)
@@ -105,12 +105,12 @@ def ipo_upcoming_tiger():
     return read_file(output) or "FILE NOT FOUND"
 
 
-@app.route("/calendar/ipo-upcoming-tiger-us.ics")
+@app.route("/calendar/ipo-tiger-us.ics")
 @wrap_exception
 @text_as_mime("text/plain" if DEBUG else "text/calendar")
-def ipo_upcoming_tiger_us():
+def ipo_tiger_us():
     cld = CalendarTiger(filter_fn=lambda x: x["market"] == "US")
-    cld.name = "ipo-upcoming-tiger-us"
+    cld.name = "ipo-tiger-us"
     cld.cal_name = "IPO (tiger) (US)"
 
     output = cld.get_output_path()
@@ -120,12 +120,12 @@ def ipo_upcoming_tiger_us():
     return read_file(output) or "FILE NOT FOUND"
 
 
-@app.route("/calendar/ipo-upcoming-tiger-hk.ics")
+@app.route("/calendar/ipo-tiger-hk.ics")
 @wrap_exception
 @text_as_mime("text/plain" if DEBUG else "text/calendar")
-def ipo_upcoming_tiger_hk():
+def ipo_tiger_hk():
     cld = CalendarTiger(filter_fn=lambda x: x["market"] == "HK")
-    cld.name = "ipo-upcoming-tiger-hk"
+    cld.name = "ipo-tiger-hk"
     cld.cal_name = "IPO (tiger) (HK)"
 
     output = cld.get_output_path()
@@ -135,12 +135,12 @@ def ipo_upcoming_tiger_hk():
     return read_file(output) or "FILE NOT FOUND"
 
 
-@app.route("/calendar/ipo-upcoming-tiger-mainland.ics")
+@app.route("/calendar/ipo-tiger-mainland.ics")
 @wrap_exception
 @text_as_mime("text/plain" if DEBUG else "text/calendar")
-def ipo_upcoming_tiger_mainland():
+def ipo_tiger_mainland():
     cld = CalendarTiger(filter_fn=lambda x: x["market"] in ["SZ", "SH"])
-    cld.name = "ipo-upcoming-tiger-mainland"
+    cld.name = "ipo-tiger-mainland"
     cld.cal_name = "IPO (tiger) (SH/SZ)"
 
     output = cld.get_output_path()
@@ -180,9 +180,9 @@ def get_rss():
     return rss
 
 
-@route_for_rss("/calendar/ipo-upcoming-tiger")
+@route_for_rss("/calendar/ipo-tiger")
 @wrap_exception
-def ipo_upcoming_tiger_rss():
+def ipo_tiger_rss():
     rss = get_rss()
     cld = CalendarTiger()
     cld.name += rss
@@ -194,12 +194,12 @@ def ipo_upcoming_tiger_rss():
     return read_file(output) or "FILE NOT FOUND"
 
 
-@route_for_rss("/calendar/ipo-upcoming-tiger-us")
+@route_for_rss("/calendar/ipo-tiger-us")
 @wrap_exception
-def ipo_upcoming_tiger_rss_us():
+def ipo_tiger_rss_us():
     rss = get_rss()
     cld = CalendarTiger(filter_fn=lambda x: x["market"] == "US")
-    cld.name = "ipo-upcoming-tiger-us" + "-" + rss
+    cld.name = "ipo-tiger-us" + "-" + rss
     cld.cal_name = "IPO (tiger) (US)"
 
     output = cld.get_output_path(rss)
@@ -209,12 +209,12 @@ def ipo_upcoming_tiger_rss_us():
     return read_file(output) or "FILE NOT FOUND"
 
 
-@route_for_rss("/calendar/ipo-upcoming-tiger-hk")
+@route_for_rss("/calendar/ipo-tiger-hk")
 @wrap_exception
-def ipo_upcoming_tiger_rss_hk():
+def ipo_tiger_rss_hk():
     rss = get_rss()
     cld = CalendarTiger(filter_fn=lambda x: x["market"] == "HK")
-    cld.name = "ipo-upcoming-tiger-hk" + "-" + rss
+    cld.name = "ipo-tiger-hk" + "-" + rss
     cld.cal_name = "IPO (tiger) (HK)"
 
     output = cld.get_output_path(rss)
@@ -224,12 +224,12 @@ def ipo_upcoming_tiger_rss_hk():
     return read_file(output) or "FILE NOT FOUND"
 
 
-@route_for_rss("/calendar/ipo-upcoming-tiger-mainland")
+@route_for_rss("/calendar/ipo-tiger-mainland")
 @wrap_exception
-def ipo_upcoming_tiger_rss_mainland():
+def ipo_tiger_rss_mainland():
     rss = get_rss()
     cld = CalendarTiger(filter_fn=lambda x: x["market"] in ["SZ", "SH"])
-    cld.name = "ipo-upcoming-tiger-mainland" + "-" + rss
+    cld.name = "ipo-tiger-mainland" + "-" + rss
     cld.cal_name = "IPO (tiger) (SH/SZ)"
 
     output = cld.get_output_path(rss)
