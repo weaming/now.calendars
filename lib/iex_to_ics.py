@@ -1,6 +1,7 @@
 import os
+from feedgen.feed import FeedGenerator
 
-from .common import http_get_url, prepare_dir, get_root_dir
+from .common import http_get_url, prepare_dir
 from .ics_patch import *
 from .tiger_api import get_ipo_calendar
 
@@ -9,14 +10,23 @@ class CalendarBase:
     name = None
     cal_name = None
 
-    def gen_ics(self,):
+    def __init__(self, filter_fn=None):
+        self.filter_fn = filter_fn
+
+    def gen_ics(self, rss=None):
+        """
+        :param rss: rss type, atom or rss
+        """
         data = self.get_data()
-        self.update_ics(data)
+        self.update_ics(data, rss)
 
     def get_output_root(self):
         return "/tmp/calendar"
 
-    def get_output_path(self,):
+    def get_output_path(self, rss=None):
+        if rss:
+            return self.get_output_path()[:-3] + rss
+
         output = os.path.expanduser(
             os.path.join(self.get_output_root(), f"{self.name}.ics")
         )
@@ -36,7 +46,7 @@ class CalendarBase:
     def get_data(self):
         raise NotImplementedError
 
-    def update_ics(self, data):
+    def update_ics(self, data, rss=None):
         c = Calendar(events=self.get_exist_events())
         for e in self.new_events(data):
             # remove by hash
@@ -47,16 +57,33 @@ class CalendarBase:
             c.events.add(e)
 
         # print(c.events)
-        ics_output = self.get_output_path()
-        with open(ics_output, "w") as f:
-            wrote = False
-            for l in c:
-                f.write(l)
-                if not wrote and l.startswith("VERSION"):
-                    f.write(f"X-WR-CALNAME:{self.cal_name}\n")
-                    wrote = True
+        if rss:
+            assert rss in ["atom", "rss"]
+            fg = FeedGenerator()
+            for e in c.events:  # type: Event
+                fg.id(e.uid)
+                fg.title(e.name)
+                fg.link(href=e.url)
+                fg.subtitle(e.description)
 
-        print(f"wrote {ics_output}")
+            rss_output = self.get_output_path(rss)
+            if rss == "atom":
+                fg.atom_file(rss_output)
+                print(f"wrote {rss_output}")
+            elif rss == "rss":
+                fg.rss_file(rss_output)
+                print(f"wrote {rss_output}")
+        else:
+            ics_output = self.get_output_path()
+            with open(ics_output, "w") as f:
+                wrote = False
+                for l in c:
+                    f.write(l)
+                    if not wrote and l.startswith("VERSION"):
+                        f.write(f"X-WR-CALNAME:{self.cal_name}\n")
+                        wrote = True
+
+            print(f"wrote {ics_output}")
 
     def new_events(self, data):
         raise NotImplementedError
@@ -78,7 +105,7 @@ class CalendarIEX(CalendarBase):
 
     def new_events(self, data):
         for x in data:
-            desc = f"market: {x['market']}, address: {x['address']}, status: {x['status']}, employees: {x['employees']}, revenue: {x['revenue']}"
+            desc = f"date: {x['expectedDate']}, market: {x['market']}, address: {x['address']}, status: {x['status']}, employees: {x['employees']}, revenue: {x['revenue']}"
             begin = f"{x['expectedDate']}T08:00:00-04:00"
             yield Event(
                 uid=x["symbol"],
@@ -134,9 +161,14 @@ class CalendarTiger(CalendarBase):
             name = x["name"]
             symbol = x["symbol"]
 
-            desc = f"market: {market}, name: {name}, date: {date}"
+            desc = f"date: {date}, market: {market}, name: {name}, date: {date}"
             begin = f"{date}T08:00:00-04:00"
             url = f"https://finance.yahoo.com/quote/{symbol}/"
+
+            if self.filter_fn is not None:
+                if not self.filter_fn(x):
+                    continue
+
             yield Event(
                 uid=symbol,
                 name=f"{market} | {symbol} | {name}",

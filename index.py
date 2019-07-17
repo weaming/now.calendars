@@ -1,5 +1,5 @@
 import os
-from flask import Flask, __version__, jsonify, make_response, url_for, redirect
+from flask import Flask, __version__, jsonify, make_response, url_for, redirect, request
 from lib.iex_to_ics import CalendarIEX, CalendarTiger
 from lib.common import read_file, expired_for_seconds
 from lib.tiger_api import get_ipo_calendar
@@ -90,6 +90,9 @@ def ipo_upcoming_iex():
     return read_file(output) or "FILE NOT FOUND"
 
 
+# Tiger IPO calendar
+
+
 @app.route("/calendar/ipo-upcoming-tiger.ics")
 @wrap_exception
 @text_as_mime("text/plain" if DEBUG else "text/calendar")
@@ -99,6 +102,131 @@ def ipo_upcoming_tiger():
     text = read_file(output)
     if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
         cld.gen_ics()
+    return read_file(output) or "FILE NOT FOUND"
+
+
+@app.route("/calendar/ipo-upcoming-tiger-us.ics")
+@wrap_exception
+@text_as_mime("text/plain" if DEBUG else "text/calendar")
+def ipo_upcoming_tiger_us():
+    cld = CalendarTiger(filter_fn=lambda x: x["market"] == "US")
+    cld.name = "ipo-upcoming-tiger-us"
+    cld.cal_name = "IPO (tiger) (US)"
+
+    output = cld.get_output_path()
+    text = read_file(output)
+    if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
+        cld.gen_ics()
+    return read_file(output) or "FILE NOT FOUND"
+
+
+@app.route("/calendar/ipo-upcoming-tiger-hk.ics")
+@wrap_exception
+@text_as_mime("text/plain" if DEBUG else "text/calendar")
+def ipo_upcoming_tiger_hk():
+    cld = CalendarTiger(filter_fn=lambda x: x["market"] == "HK")
+    cld.name = "ipo-upcoming-tiger-hk"
+    cld.cal_name = "IPO (tiger) (HK)"
+
+    output = cld.get_output_path()
+    text = read_file(output)
+    if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
+        cld.gen_ics()
+    return read_file(output) or "FILE NOT FOUND"
+
+
+@app.route("/calendar/ipo-upcoming-tiger-mainland.ics")
+@wrap_exception
+@text_as_mime("text/plain" if DEBUG else "text/calendar")
+def ipo_upcoming_tiger_mainland():
+    cld = CalendarTiger(filter_fn=lambda x: x["market"] in ["SZ", "SH"])
+    cld.name = "ipo-upcoming-tiger-mainland"
+    cld.cal_name = "IPO (tiger) (SH/SZ)"
+
+    output = cld.get_output_path()
+    text = read_file(output)
+    if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
+        cld.gen_ics()
+    return read_file(output) or "FILE NOT FOUND"
+
+
+# Tiger IPO Calendar RSS
+
+
+def route_for_rss(path_prefix):
+    def decorator(fn):
+        for t in ["atom", "rss"]:
+            fn.__name__ += f"_{t}"
+            mime = {"atom": "application/rss+xml", "rss": "application/rss+xml"}[t]
+            fn = text_as_mime(mime)(fn)
+            app.route(f"{path_prefix}.{t}")(fn)
+
+        return fn
+
+    return decorator
+
+
+def get_rss():
+    url = request.url
+    rss = None
+    if url.endswith(".atom"):
+        rss = "atom"
+    elif url.endswith(".rss"):
+        rss = "rss"
+    return rss
+
+
+@route_for_rss("/calendar/ipo-upcoming-tiger")
+@wrap_exception
+def ipo_upcoming_tiger():
+    cld = CalendarTiger()
+    output = cld.get_output_path(get_rss())
+    text = read_file(output)
+
+    if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
+        cld.gen_ics(get_rss())
+    return read_file(output) or "FILE NOT FOUND"
+
+
+@route_for_rss("/calendar/ipo-upcoming-tiger-us")
+@wrap_exception
+def ipo_upcoming_tiger_us():
+    cld = CalendarTiger(filter_fn=lambda x: x["market"] == "US")
+    cld.name = "ipo-upcoming-tiger-us"
+    cld.cal_name = "IPO (tiger) (US)"
+
+    output = cld.get_output_path(get_rss())
+    text = read_file(output)
+    if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
+        cld.gen_ics(get_rss())
+    return read_file(output) or "FILE NOT FOUND"
+
+
+@route_for_rss("/calendar/ipo-upcoming-tiger-hk")
+@wrap_exception
+def ipo_upcoming_tiger_hk():
+    cld = CalendarTiger(filter_fn=lambda x: x["market"] == "HK")
+    cld.name = "ipo-upcoming-tiger-hk"
+    cld.cal_name = "IPO (tiger) (HK)"
+
+    output = cld.get_output_path(get_rss())
+    text = read_file(output)
+    if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
+        cld.gen_ics(get_rss())
+    return read_file(output) or "FILE NOT FOUND"
+
+
+@route_for_rss("/calendar/ipo-upcoming-tiger-mainland")
+@wrap_exception
+def ipo_upcoming_tiger_mainland():
+    cld = CalendarTiger(filter_fn=lambda x: x["market"] in ["SZ", "SH"])
+    cld.name = "ipo-upcoming-tiger-mainland"
+    cld.cal_name = "IPO (tiger) (SH/SZ)"
+
+    output = cld.get_output_path(get_rss())
+    text = read_file(output)
+    if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
+        cld.gen_ics(get_rss())
     return read_file(output) or "FILE NOT FOUND"
 
 
