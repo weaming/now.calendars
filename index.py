@@ -155,12 +155,16 @@ def ipo_upcoming_tiger_mainland():
 
 def route_for_rss(path_prefix):
     def decorator(fn):
+        origin_name = fn.__name__
         for t in ["atom", "rss"]:
+            # rename for app.route
             fn.__name__ += f"_{t}"
             mime = {"atom": "application/rss+xml", "rss": "application/rss+xml"}[t]
-            fn = text_as_mime(mime)(fn)
-            app.route(f"{path_prefix}.{t}")(fn)
+            mine_fn = text_as_mime(mime)(fn)
+            app.route(f"{path_prefix}.{t}")(mine_fn)
 
+        # rename back
+        fn.__name__ = origin_name
         return fn
 
     return decorator
@@ -178,7 +182,7 @@ def get_rss():
 
 @route_for_rss("/calendar/ipo-upcoming-tiger")
 @wrap_exception
-def ipo_upcoming_tiger():
+def ipo_upcoming_tiger_rss():
     rss = get_rss()
     cld = CalendarTiger()
     cld.name += rss
@@ -192,7 +196,7 @@ def ipo_upcoming_tiger():
 
 @route_for_rss("/calendar/ipo-upcoming-tiger-us")
 @wrap_exception
-def ipo_upcoming_tiger_us():
+def ipo_upcoming_tiger_rss_us():
     rss = get_rss()
     cld = CalendarTiger(filter_fn=lambda x: x["market"] == "US")
     cld.name = "ipo-upcoming-tiger-us" + "-" + rss
@@ -207,7 +211,7 @@ def ipo_upcoming_tiger_us():
 
 @route_for_rss("/calendar/ipo-upcoming-tiger-hk")
 @wrap_exception
-def ipo_upcoming_tiger_hk():
+def ipo_upcoming_tiger_rss_hk():
     rss = get_rss()
     cld = CalendarTiger(filter_fn=lambda x: x["market"] == "HK")
     cld.name = "ipo-upcoming-tiger-hk" + "-" + rss
@@ -222,7 +226,7 @@ def ipo_upcoming_tiger_hk():
 
 @route_for_rss("/calendar/ipo-upcoming-tiger-mainland")
 @wrap_exception
-def ipo_upcoming_tiger_mainland():
+def ipo_upcoming_tiger_rss_mainland():
     rss = get_rss()
     cld = CalendarTiger(filter_fn=lambda x: x["market"] in ["SZ", "SH"])
     cld.name = "ipo-upcoming-tiger-mainland" + "-" + rss
