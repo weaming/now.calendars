@@ -121,7 +121,8 @@ class CalendarBase:
                 market = e.name.split("|")[0].strip()
                 # only latest symbols
                 if market == "US" and len(c.events) - i <= 5:
-                    info_html = get_ipo_info_html(e.uid, enable=True)
+                    # disable for timeout in now server
+                    info_html = get_ipo_info_html(e.uid, enable=False)
                     link = f'<p><a href="https://www.nasdaq.com/symbol/{e.uid}">Goto NASDAQ detail page</a></p>'
                     fe.description(f"<p>{e.description}</p> {link} {info_html}")
                 else:
