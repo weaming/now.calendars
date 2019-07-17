@@ -1,6 +1,6 @@
 import os
 from flask import Flask, __version__, jsonify, make_response, url_for, redirect
-from lib.iex_to_ics import get_ics_output, gen_ics
+from lib.iex_to_ics import CalendarIEX, CalendarTiger
 from lib.common import read_file, expired_for_seconds
 from lib.tiger_api import get_ipo_calendar
 
@@ -54,36 +54,6 @@ def index():
     return redirect("/site-map")
 
 
-@app.route("/status")
-@dict_as_json
-def status():
-    return {"flask": {"version": __version__}, "status": "healthy"}
-
-
-@app.route("/calendar/iex-ipo-upcomming.ics")
-@wrap_exception
-@text_as_mime("text/plain" if DEBUG else "text/calendar")
-def ipo_upcomming():
-    output = get_ics_output()
-    text = read_file(output)
-    if expired_for_seconds("iex-ipo-upcomming", 60 * 60 * 24) or text is None:
-        gen_ics()
-    return read_file(output) or "FILE NOT FOUND"
-
-
-@app.route("/api/itiger.com/calendar/api")
-@wrap_exception
-@dict_as_json
-def tiger_calendar():
-    return get_ipo_calendar().json()
-
-
-@app.route("/test")
-@text_as_mime("text/plain")
-def test_text():
-    return "hello"
-
-
 @app.route("/site-map")
 @dict_as_json
 def site_map():
@@ -93,6 +63,43 @@ def site_map():
             url = url_for(rule.endpoint, **(rule.defaults or {}))
             links[rule.endpoint] = {"url": url, "methods": list(rule.methods)}
     return {"urls": links}
+
+
+@app.route("/status")
+@dict_as_json
+def status():
+    return {"flask": {"version": __version__}, "status": "healthy"}
+
+
+@app.route("/api/itiger.com/calendar/api")
+@wrap_exception
+@dict_as_json
+def tiger_calendar():
+    return get_ipo_calendar().json()
+
+
+@app.route("/calendar/ipo-upcoming-iex.ics")
+@wrap_exception
+@text_as_mime("text/plain" if DEBUG else "text/calendar")
+def ipo_upcoming_iex():
+    cld = CalendarIEX()
+    output = cld.get_output_path()
+    text = read_file(output)
+    if expired_for_seconds(cld.name, 60 * 60 * 24) or text is None:
+        cld.gen_ics()
+    return read_file(output) or "FILE NOT FOUND"
+
+
+@app.route("/calendar/ipo-upcoming-tiger.ics")
+@wrap_exception
+@text_as_mime("text/plain" if DEBUG else "text/calendar")
+def ipo_upcoming_tiger():
+    cld = CalendarTiger()
+    output = cld.get_output_path()
+    text = read_file(output)
+    if expired_for_seconds(cld.name, 60 * 60 * 24) or text is None:
+        cld.gen_ics()
+    return read_file(output) or "FILE NOT FOUND"
 
 
 if __name__ == "__main__":
