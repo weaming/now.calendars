@@ -1,7 +1,7 @@
 import os
-from flask import Flask, __version__, jsonify, make_response, url_for
+from flask import Flask, __version__, jsonify, make_response, url_for, redirect
 from lib.iex_to_ics import get_ics_output, gen_ics
-from lib.common import read_file
+from lib.common import read_file, expired_for_seconds
 
 app = Flask(__name__)
 DEBUG = bool(os.getenv("DEBUG"))
@@ -14,6 +14,22 @@ def dict_as_json(fn):
     @wraps(fn)
     def _fn(*args, **kwargs):
         return jsonify(**fn(*args, **kwargs))
+
+    return _fn
+
+
+def wrap_exception(fn):
+    @wraps(fn)
+    def _fn(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as e:
+            response = make_response(
+                {"exception": {"str": str(e), "type": str(type(e))}}
+            )
+            response.headers["Content-Type"] = "application/json"
+            response.status_code = 500
+            return response
 
     return _fn
 
@@ -33,9 +49,8 @@ def text_as_mime(mime):
 
 
 @app.route("/")
-@dict_as_json
 def index():
-    return {}
+    return redirect("/site-map")
 
 
 @app.route("/status")
@@ -45,10 +60,14 @@ def status():
 
 
 @app.route("/calendar/iex-ipo-upcomming.ics")
+@wrap_exception
 @text_as_mime("text/plain" if DEBUG else "text/calendar")
 def ipo_upcomming():
-    gen_ics()
-    return read_file(get_ics_output())
+    output = get_ics_output()
+    text = read_file(output)
+    if expired_for_seconds("iex-ipo-upcomming", 60 * 60 * 24) or text is None:
+        gen_ics()
+    return read_file(output) or "FILE NOT FOUND"
 
 
 @app.route("/test")

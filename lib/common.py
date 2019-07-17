@@ -1,8 +1,10 @@
 import os
+import time
 import datetime
 import json
 import requests
 import pytz
+from jsonkv import JsonKV
 
 from bs4 import BeautifulSoup
 
@@ -21,6 +23,18 @@ UA = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/69.0.3497.100 Safari/537.36"
 )
+
+
+def expired_for_seconds(name, seconds):
+    path = os.path.join(get_root_dir(), "db.json")
+    now = time.time()
+    db = JsonKV(path)
+    with db:
+        ts = db[name]
+        if now - (ts or 0) > seconds:
+            db[name] = now
+            return True
+    return False
 
 
 def http_get_url(

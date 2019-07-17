@@ -1,6 +1,4 @@
 import os
-import sys
-import traceback
 
 from .common import http_get_url, prepare_dir, get_root_dir
 from .ics_patch import *
@@ -9,8 +7,7 @@ from .ics_patch import *
 def get_ipo_list(api):
     err, data = http_get_url(api, is_json=True)
     if err:
-        print(err, data)
-        sys.exit(1)
+        raise Exception(f"error: {err}; data: {data}")
     return [x for x in data["rawData"]]
 
 
@@ -74,8 +71,5 @@ def update_ics(data, cal_name="Upcommming IPOs"):
 def gen_ics():
     token = os.getenv("IEX_APIS_TOKEN")
     api = f"https://cloud.iexapis.com/stable/stock/market/upcoming-ipos?token={token}"
-    try:
-        data = get_ipo_list(api)
-        update_ics(data)
-    except Exception:
-        traceback.print_exc()
+    data = get_ipo_list(api)
+    update_ics(data)

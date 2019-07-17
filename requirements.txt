@@ -1,5 +1,6 @@
-Flask==1.1.1
+Flask
 requests
 beautifulsoup4
 ics
 pytz
+jsonkv
