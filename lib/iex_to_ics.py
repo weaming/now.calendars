@@ -111,11 +111,12 @@ class CalendarBase:
                 fe.id(e.uid)
                 fe.title(e.name)
                 fe.link(href=e.url)
+                fe.updated(e.begin.datetime)
 
                 market = e.name.split("|")[0].strip()
                 if market == "US":
                     info_html = get_ipo_info_html(e.uid)
-                    link = f'<p><a href="https://www.nasdaq.com/symbol/{e.uid}">Goto NASDAQ IPO page</a></p>'
+                    link = f'<p><a href="https://www.nasdaq.com/symbol/{e.uid}">Goto NASDAQ detail page</a></p>'
                     fe.description(f"<p>{e.description}</p> {link} {info_html}")
                 else:
                     fe.description(e.description)
