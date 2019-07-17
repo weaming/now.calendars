@@ -28,7 +28,7 @@ UA = (
 def expired_for_seconds(name, seconds):
     # path = os.path.join(get_root_dir(), "db.json")
     path = os.path.join("/tmp/", "db.json")
-    db = JsonKV(path)
+    db = JsonKV(path, release_force=True)
 
     now = time.time()
     with db:

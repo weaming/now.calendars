@@ -70,7 +70,11 @@ def site_map():
 @app.route("/status")
 @dict_as_json
 def status():
-    return {"flask": {"version": __version__}, "status": "healthy"}
+    return {
+        "flask": {"version": __version__},
+        "status": "healthy",
+        "files": os.listdir("/tmp"),
+    }
 
 
 @app.route("/api/itiger.com/calendar/api")
