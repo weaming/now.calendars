@@ -97,7 +97,7 @@ def ipo_upcoming_tiger():
     cld = CalendarTiger()
     output = cld.get_output_path()
     text = read_file(output)
-    if expired_for_seconds(cld.name, 60 * 60 * 24) or text is None:
+    if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
         cld.gen_ics()
     return read_file(output) or "FILE NOT FOUND"
 
