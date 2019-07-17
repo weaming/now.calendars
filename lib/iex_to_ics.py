@@ -1,9 +1,49 @@
 import os
 from feedgen.feed import FeedGenerator
 
-from .common import http_get_url, prepare_dir
+from .common import http_get_url, prepare_dir, url2soup, db
 from .ics_patch import *
 from .tiger_api import get_ipo_calendar
+
+
+def get_ipo_info_html(symbol):
+    with db:
+        key = "ipo_info_html"
+        if db[key]:
+            if symbol in db[key]:
+                return db[key][symbol]
+        else:
+            db[key] = {}
+
+        soup1 = url2soup(f"https://www.nasdaq.com/symbol/{symbol}")
+        if "this is an unknown symbol" in str(soup1).lower():
+            return ""
+
+        a_tags = soup1.select(".notTradingIPO a")
+        if a_tags:
+            url2 = a_tags[0]["href"]
+            print(symbol, url2)
+            soup2 = url2soup(url2)
+
+            # clean html
+            html = ""
+            for selector in [
+                ".genTable",
+                ".ipo-comp-description",
+                "#read_more_div_toggle1",
+            ]:
+                info = soup2.select(selector)
+                if not info:
+                    continue
+                html += str(info[0]).replace("display:none", "")
+
+            # cache
+            db[key][symbol] = html
+
+            with open("x.html", "w") as f:
+                f.write(html)
+            return html
+        return ""
 
 
 class CalendarBase:
@@ -67,7 +107,14 @@ class CalendarBase:
                 fe.id(e.uid)
                 fe.title(e.name)
                 fe.link(href=e.url)
-                fe.description(e.description)
+
+                market = e.name.split("|")[0].strip()
+                if market == "US":
+                    info_html = get_ipo_info_html(e.uid)
+                    link = f'<p><a href="https://www.nasdaq.com/symbol/{e.uid}">Goto NASDAQ IPO page</a></p>'
+                    fe.description(f"<p>{e.description}</p> {link} {info_html}")
+                else:
+                    fe.description(e.description)
 
             rss_output = self.get_output_path(rss)
             if rss == "atom":
@@ -98,9 +145,7 @@ class CalendarIEX(CalendarBase):
 
     def get_data(self):
         token = os.getenv("IEX_APIS_TOKEN")
-        api = (
-            f"https://cloud.iexapis.com/stable/stock/market/ipos?token={token}"
-        )
+        api = f"https://cloud.iexapis.com/stable/stock/market/ipos?token={token}"
         err, data = http_get_url(api, is_json=True)
         if err:
             raise Exception(f"error: {err}; data: {data}")

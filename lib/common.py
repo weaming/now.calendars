@@ -13,6 +13,11 @@ def get_root_dir():
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+# path = os.path.join(get_root_dir(), "db.json")
+path = os.path.join("/tmp/", "db.json")
+db = JsonKV(path)
+
+
 def get_now():
     TIMEZONE = os.getenv("TZ") or "Asia/Hong_Kong"
     TZ = pytz.timezone(TIMEZONE)
@@ -26,10 +31,7 @@ UA = (
 
 
 def expired_for_seconds(name, seconds):
-    # path = os.path.join(get_root_dir(), "db.json")
-    path = os.path.join("/tmp/", "db.json")
     now = time.time()
-    db = JsonKV(path)
     with db:
         ts = db[name]
         if now - (ts or 0) > seconds:
