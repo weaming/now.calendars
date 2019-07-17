@@ -60,11 +60,14 @@ class CalendarBase:
         if rss:
             assert rss in ["atom", "rss"]
             fg = FeedGenerator()
+            fg.id(self.name)
+            fg.title(f"Events of {self.cal_name}")
             for e in c.events:  # type: Event
-                fg.id(e.uid)
-                fg.title(e.name)
-                fg.link(href=e.url)
-                fg.subtitle(e.description)
+                fe = fg.add_entry()
+                fe.id(e.uid)
+                fe.title(e.name)
+                fe.link(href=e.url)
+                fe.description(e.description)
 
             rss_output = self.get_output_path(rss)
             if rss == "atom":

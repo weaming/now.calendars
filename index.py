@@ -1,4 +1,5 @@
 import os
+import traceback
 from flask import Flask, __version__, jsonify, make_response, url_for, redirect, request
 from lib.iex_to_ics import CalendarIEX, CalendarTiger
 from lib.common import read_file, expired_for_seconds
@@ -25,6 +26,7 @@ def wrap_exception(fn):
         try:
             return fn(*args, **kwargs)
         except Exception as e:
+            traceback.print_exc()
             response = make_response(
                 {"exception": {"str": str(e), "type": str(type(e))}}
             )
