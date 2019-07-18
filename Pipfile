@@ -11,7 +11,7 @@ requests = "*"
 beautifulsoup4 = "*"
 ics = "*"
 pytz = "*"
-jsonkv = ">=1.1.9"
+jsonkv = ">=1.1.10"
 feedgen = "*"
 
 [requires]

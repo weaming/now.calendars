@@ -12,8 +12,7 @@ def get_ipo_info_html(symbol, enable=False):
         return "detail disabled"
 
     path = os.path.join("/tmp/", "db2.json")
-    db = JsonKV(path, release_force=True)
-    db.file_lock.timeout = 5
+    db = JsonKV(path, release_force=True, timeout=3)
     with db:
         key = "ipo_info_html"
         if db[key]:
