@@ -221,7 +221,7 @@ class CalendarTiger(CalendarBase):
             name = x["name"]
             symbol = x["symbol"]
 
-            desc = f"date: {date}, market: {market}, name: {name}, date: {date}"
+            desc = f"date: {date}, market: {market}, name: {name}"
             begin = f"{date}T08:00:00-04:00"
             url = f"https://finance.yahoo.com/quote/{symbol}/"
 
