@@ -30,7 +30,7 @@ def wrap_exception(fn):
             response = make_response(
                 {"exception": {"str": str(e), "type": str(type(e))}}
             )
-            response.headers["Content-Type"] = "application/json"
+            response.headers["Content-Type"] = "application/json; charset=utf8"
             response.status_code = 500
             return response
 
@@ -43,7 +43,7 @@ def text_as_mime(mime):
         def _fn(*args, **kwargs):
             rv = fn(*args, **kwargs)
             response = make_response(rv)
-            response.headers["Content-Type"] = mime
+            response.headers["Content-Type"] = mime + '; charset=utf8'
             return response
 
         return _fn
