@@ -11,49 +11,6 @@ def get_ipo_info_html(symbol, enable=False):
     if not enable:
         return "detail disabled"
 
-    path = os.path.join("/tmp/", "db2.json")
-    db = JsonKV(path, release_force=True, timeout=3)
-    with db:
-        key = "ipo_info_html"
-        if db[key]:
-            if symbol in db[key]:
-                return db[key][symbol]
-        else:
-            db[key] = {}
-
-        soup1 = url2soup(f"https://www.nasdaq.com/symbol/{symbol}")
-        if "this is an unknown symbol" in str(soup1).lower():
-            return "unknown symbol"
-
-        a_tags = soup1.select(".notTradingIPO a")
-        if a_tags:
-            url2 = a_tags[0]["href"]
-            print(symbol, url2)
-            soup2 = url2soup(url2)
-
-            # clean html
-            html = ""
-            for selector in [
-                ".genTable",
-                ".ipo-comp-description",
-                "#read_more_div_toggle1",
-            ]:
-                info = soup2.select(selector)
-                if not info:
-                    continue
-                html += str(info[0]).replace("display:none", "")
-
-            # cache
-            db[key][symbol] = html
-
-            # debug
-            # with open("x.html", "w") as f:
-            #     f.write(html)
-            # return html
-        else:
-            return str((soup1.select(".overview-results") or [""])[0])
-    return ""
-
 
 class CalendarBase:
     name = None
@@ -151,6 +108,7 @@ class CalendarBase:
         raise NotImplementedError
 
 
+# deprecated
 class CalendarIEX(CalendarBase):
     name = "ipo-iex"
     cal_name = "Upcoming IPOs (IEX)"

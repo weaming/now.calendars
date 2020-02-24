@@ -1,7 +1,7 @@
 import os
 import traceback
 from flask import Flask, __version__, jsonify, make_response, url_for, redirect, request
-from lib.iex_to_ics import CalendarIEX, CalendarTiger, get_ipo_info_html
+from lib.calendars import CalendarTiger
 from lib.common import read_file, expired_for_seconds
 from lib.tiger_api import get_ipo_calendar
 
@@ -77,30 +77,11 @@ def status():
     }
 
 
-@app.route("/api/itiger.com/calendar/api")
+@app.route("/api/itiger.com/calendar.json")
 @wrap_exception
 @dict_as_json
 def tiger_calendar():
     return get_ipo_calendar().json()
-
-
-@app.route("/api/nasdaq.com/symbol/<symbol>", defaults={"symbol": "QQQ"})
-@wrap_exception
-@text_as_mime("text/html")
-def nasdaq_symbol_detail(symbol):
-    return get_ipo_info_html(symbol, enable=True)
-
-
-@app.route("/calendar/ipo-iex.ics")
-@wrap_exception
-@text_as_mime("text/plain" if DEBUG else "text/calendar")
-def ipo_iex():
-    cld = CalendarIEX()
-    output = cld.get_output_path()
-    text = read_file(output)
-    if expired_for_seconds(cld.name, 60 * 60 * 24) or text is None:
-        cld.gen_ics()
-    return read_file(output) or "FILE NOT FOUND"
 
 
 # Tiger IPO calendar
