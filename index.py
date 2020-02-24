@@ -62,9 +62,9 @@ def site_map():
     links = {}
     for rule in app.url_map.iter_rules():
         if rule.endpoint != "static":
-            url = url_for(rule.endpoint, **(rule.defaults or {}))
-            links[rule.endpoint] = {"url": url, "methods": list(rule.methods)}
-    return {"urls": links}
+            uri = url_for(rule.endpoint, **(rule.defaults or {}))
+            links[rule.endpoint] = {"uri": uri, "methods": list(rule.methods)}
+    return {"uris": links}
 
 
 @app.route("/status")
