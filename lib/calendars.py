@@ -242,7 +242,7 @@ class CalendarChina(CalendarBase):
 发行价(元) x 数量(万股): {price} x {x['发行数量(万股)']}
 市盈率: {x['市盈率']}
 募集资金: {x['募集资金(亿元)']}"""
-            begin = f"{date}T09:00-12:00"
+            begin = f"{date}T09:00+08:00"
             url = f"https://biz.finance.sina.com.cn/suggest/lookup_n.php?q={symbol}&country=stock"
 
             if self.filter_fn is not None:

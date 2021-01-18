@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import requests
 from bs4 import BeautifulSoup
 from bs4.element import Comment
@@ -31,3 +32,12 @@ def url2soup(url, params=None, encoding='utf8'):
 
 def html2soup(html):
     return BeautifulSoup(html, "html.parser")
+
+
+def map_do(fn, iterable, n=None):
+    if n is None:
+        iterable = list(iterable)
+    n = len(iterable)
+    with ThreadPoolExecutor(n) as executor:
+        results = executor.map(fn, iterable)
+        return list(results)
