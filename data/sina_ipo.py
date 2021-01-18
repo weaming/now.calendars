@@ -5,7 +5,7 @@ def get_all_ipo_data():
     data = None
     for i in range(100):
         page = ipo_single_page(i)
-        if page is None:
+        if page is None or i >= 10:
             return data
         data = (data + page) if data is not None else page
 
