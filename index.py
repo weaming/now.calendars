@@ -1,7 +1,7 @@
 import os
 import traceback
 from flask import Flask, __version__, jsonify, make_response, url_for, redirect, request
-from lib.calendars import CalendarTiger
+from lib.calendars import CalendarTiger, CalendarChina
 from lib.common import read_file, expired_for_seconds
 from lib.tiger_api import get_ipo_calendar
 
@@ -102,6 +102,18 @@ def tiger_set_authorization():
 @text_as_mime("text/plain" if DEBUG else "text/calendar")
 def ipo_tiger():
     cld = CalendarTiger()
+    output = cld.get_output_path()
+    text = read_file(output)
+    if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
+        cld.gen_ics()
+    return read_file(output) or "FILE NOT FOUND"
+
+
+@app.route("/calendar/ipo-china.ics")
+@wrap_exception
+@text_as_mime("text/plain" if DEBUG else "text/calendar")
+def ipo_china():
+    cld = CalendarChina()
     output = cld.get_output_path()
     text = read_file(output)
     if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:

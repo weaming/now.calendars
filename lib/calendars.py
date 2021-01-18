@@ -5,6 +5,7 @@ from jsonkv import JsonKV
 from .common import http_get_url, prepare_dir, url2soup
 from .ics_patch import *
 from .tiger_api import get_ipo_calendar
+from data.sina_ipo import get_all_ipo_data
 
 
 def get_ipo_info_html(symbol, enable=False):
@@ -190,6 +191,67 @@ class CalendarTiger(CalendarBase):
             yield Event(
                 uid=symbol,
                 name=f"{market} | {symbol} | {name}",
+                begin=begin,
+                # duration=datetime.timedelta(hours=12),
+                description=desc,
+                transparent=True,
+                url=url,
+                categories={"stock", "financial"},
+                alarms=[DisplayAlarm(trigger=get_arrow(begin))],
+            )
+
+
+class CalendarChina(CalendarBase):
+    name = "ipo-china"
+    cal_name = "IPO (China)"
+
+    def get_data(self):
+        data = get_all_ipo_data()
+        for x in data:
+            yield x
+
+    def new_events(self, data):
+        """
+        {
+          "证券代码": "003023",
+          "申购代码": "003023",
+          "证券简称": "彩虹集团",
+          "上网发行日期": "2020-12-02",
+          "上市日期": "2020-12-11",
+          "发行数量(万股)": "2030",
+          "上网发行数量(万股)": "1827",
+          "发行价格(元)": "23.89",
+          "市盈率": "22.99",
+          "个人申购上限(万股)": "0.80",
+          "募集资金(亿元)": "4.850",
+          "网上中签率(%)": "0.02"
+        }
+        """
+        for x in data:
+            # common keys of ipo list
+            date = x["上市日期"] or x["上网发行日期"]
+            name = x["证券简称"]
+            symbol = x["证券代码"]
+            pe = x["市盈率"]
+            price = x['发行价格(元)']
+
+            if not date:
+                continue
+
+            desc = f"""日期: {date}, 简称: {name}, 代码: {symbol}
+发行价(元) x 数量(万股): {price} x {x['发行数量(万股)']}
+市盈率: {x['市盈率']}
+募集资金: {x['募集资金(亿元)']}"""
+            begin = f"{date}T09:00-12:00"
+            url = f"https://biz.finance.sina.com.cn/suggest/lookup_n.php?q={symbol}&country=stock"
+
+            if self.filter_fn is not None:
+                if not self.filter_fn(x):
+                    continue
+
+            yield Event(
+                uid=symbol,
+                name=f"{symbol} | {name} | {price}",
                 begin=begin,
                 # duration=datetime.timedelta(hours=12),
                 description=desc,
