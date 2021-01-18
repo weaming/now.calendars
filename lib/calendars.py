@@ -229,7 +229,7 @@ class CalendarChina(CalendarBase):
         """
         for x in data:
             # common keys of ipo list
-            date = x["上市日期"] or x["上网发行日期"]
+            date = x["上网发行日期"]
             name = x["证券简称"]
             symbol = x["证券代码"]
             pe = x["市盈率"]
