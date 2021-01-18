@@ -84,6 +84,16 @@ def tiger_calendar():
     return get_ipo_calendar().json()
 
 
+@app.route("/api/itiger.com/auth", methods=["POST"])
+@wrap_exception
+@dict_as_json
+def tiger_set_authorization():
+    from lib import tiger_api
+
+    tiger_api.auth = request.get_json()['auth']
+    return get_ipo_calendar().json()
+
+
 # Tiger IPO calendar
 
 
@@ -191,45 +201,45 @@ def ipo_tiger_rss():
 @route_for_rss("/calendar/ipo-tiger-us")
 @wrap_exception
 def ipo_tiger_rss_us():
-    rss = get_rss()
+    ext = get_rss()
     cld = CalendarTiger(filter_fn=lambda x: x["market"] == "US")
-    cld.name = "ipo-tiger-us" + "-" + rss
+    cld.name = "ipo-tiger-us" + "-" + ext
     cld.cal_name = "IPO (tiger) (US)"
 
-    output = cld.get_output_path(rss)
+    output = cld.get_output_path(ext)
     text = read_file(output)
     if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
-        cld.gen_ics(rss)
+        cld.gen_ics(ext)
     return read_file(output) or "FILE NOT FOUND"
 
 
 @route_for_rss("/calendar/ipo-tiger-hk")
 @wrap_exception
 def ipo_tiger_rss_hk():
-    rss = get_rss()
+    ext = get_rss()
     cld = CalendarTiger(filter_fn=lambda x: x["market"] == "HK")
-    cld.name = "ipo-tiger-hk" + "-" + rss
+    cld.name = "ipo-tiger-hk" + "-" + ext
     cld.cal_name = "IPO (tiger) (HK)"
 
-    output = cld.get_output_path(rss)
+    output = cld.get_output_path(ext)
     text = read_file(output)
     if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
-        cld.gen_ics(rss)
+        cld.gen_ics(ext)
     return read_file(output) or "FILE NOT FOUND"
 
 
 @route_for_rss("/calendar/ipo-tiger-mainland")
 @wrap_exception
 def ipo_tiger_rss_mainland():
-    rss = get_rss()
+    ext = get_rss()
     cld = CalendarTiger(filter_fn=lambda x: x["market"] in ["SZ", "SH"])
-    cld.name = "ipo-tiger-mainland" + "-" + rss
+    cld.name = "ipo-tiger-mainland" + "-" + ext
     cld.cal_name = "IPO (tiger) (SH/SZ)"
 
-    output = cld.get_output_path(rss)
+    output = cld.get_output_path(ext)
     text = read_file(output)
     if expired_for_seconds(cld.name, 60 * 60 * 3) or text is None:
-        cld.gen_ics(rss)
+        cld.gen_ics(ext)
     return read_file(output) or "FILE NOT FOUND"
 
 
